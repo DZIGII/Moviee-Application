@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :kotlin:compileCommonMainKotlinMetadata:*)",
+      "Bash(./gradlew :androidApp:assembleDebug:*)",
+      "Bash(./gradlew :desktopApp:classes:*)",
+      "Bash(./gradlew :kotlin:compileKotlinJvm:*)"
+    ]
+  }
+}
