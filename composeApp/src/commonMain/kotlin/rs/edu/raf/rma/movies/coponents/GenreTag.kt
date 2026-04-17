@@ -22,11 +22,11 @@ fun GenreTag(
                 color = Color(0xFF333333),
                 shape = RoundedCornerShape(50.dp)
             )
-            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .padding(horizontal = 11.dp, vertical = 5.dp)
     ) {
         Text(
-            text = genre.genre,
-            fontSize = 15.sp,
+            text = genre.name,
+            fontSize = 13.sp,
             color = Color(0xFFCCCCCC)
         )
     }

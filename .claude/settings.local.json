@@ -4,7 +4,8 @@
       "Bash(./gradlew :kotlin:compileCommonMainKotlinMetadata:*)",
       "Bash(./gradlew :androidApp:assembleDebug:*)",
       "Bash(./gradlew :desktopApp:classes:*)",
-      "Bash(./gradlew :kotlin:compileKotlinJvm:*)"
+      "Bash(./gradlew :kotlin:compileKotlinJvm:*)",
+      "WebFetch(domain:rma.finlab.rs)"
     ]
   }
 }

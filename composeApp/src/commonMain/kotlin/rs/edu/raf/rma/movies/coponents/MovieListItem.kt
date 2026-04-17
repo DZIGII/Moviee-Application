@@ -1,7 +1,7 @@
 package rs.edu.raf.rma.movies.coponents
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,9 +27,13 @@ import org.jetbrains.compose.resources.painterResource
 import rs.edu.raf.rma.movies.domain.Movie
 import rma_06_kotlin.composeapp.generated.resources.Res
 import rma_06_kotlin.composeapp.generated.resources.movie
+import coil3.compose.AsyncImage
 
 @Composable
-fun MovieListItem(movie: Movie) {
+fun MovieListItem(
+    movie: Movie,
+    onClick: (Movie) -> Unit
+    ) {
 
     Card(
         colors = CardDefaults.cardColors(
@@ -37,6 +42,7 @@ fun MovieListItem(movie: Movie) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .clickable { onClick(movie) }
     ) {
 
         Row(
@@ -47,12 +53,15 @@ fun MovieListItem(movie: Movie) {
 
         ) {
 
-            Image(
-                painter = painterResource(Res.drawable.movie),
-                contentDescription = null,
+            AsyncImage(
+                model = movie.posterPath?.let {
+                    "https://image.tmdb.org/t/p/w500$it"
+                },
+                contentDescription = movie.title,
                 modifier = Modifier
-                    .size(60.dp, 100.dp)
-                    .clip(RoundedCornerShape(15.dp))
+                    .width(80.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
             )
 
             Column(
@@ -82,13 +91,13 @@ fun MovieListItem(movie: Movie) {
                 ) {
 
                     Text(
-                        text = "⭐ " + movie.rating,
+                        text = "⭐ " + movie.imdbRating,
                         fontSize = 16.sp,
                         color = Color(0xFFF5C518)
                     )
 
                     Text(
-                        text = movie.votes.toString() + " votes",
+                        text = movie.imdbVotes.toString() + " votes",
                         fontSize = 13.sp,
                         color = Color(0xFF777777)
                     )

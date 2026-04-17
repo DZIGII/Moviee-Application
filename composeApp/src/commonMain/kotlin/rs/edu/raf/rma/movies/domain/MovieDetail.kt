@@ -1,7 +1,9 @@
 package rs.edu.raf.rma.movies.domain
 
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.StructureKind
 
+@Serializable
 data class MovieDetail(
     val imdbId: String,
     val tmdbId: Int?,
@@ -24,5 +26,5 @@ data class MovieDetail(
     val backdropPath: String?,
     val homepage: String?,
     val genres: List<Genre>,
-    val collection: Collection<StructureKind.OBJECT>?
+    val collection: MovieCollection? = null
 )

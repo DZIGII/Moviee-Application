@@ -1,12 +1,9 @@
 package rs.edu.raf.rma.android
 
-import rs.edu.raf.rma.movies.screen.MovieScreen
-
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import rs.edu.raf.rma.movies.screen.MainScreen
+import rs.edu.raf.rma.movies.screen.MoviesAppRoot
 
 class MainActivity : ComponentActivity() {
 
@@ -14,8 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MovieScreen()
-//            MainScreen()
+            MoviesAppRoot()
         }
     }
 }

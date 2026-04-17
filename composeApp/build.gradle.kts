@@ -36,8 +36,15 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
 
+            implementation(libs.ktor.client.okhttp)
+
             // Room
             implementation(libs.room.runtime.android)
+
+            implementation(libs.coil.network.ktor)
+
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonMain.dependencies {
             // Compose Multiplatform
@@ -50,6 +57,8 @@ kotlin {
             implementation(libs.compose.material3.adaptive.navigation.suite)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
 
             // Lifecycle & Navigation
             implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -85,6 +94,10 @@ kotlin {
 
             // Adaptive UI
             implementation(libs.adaptive.ui)
+
+            implementation(libs.coil.compose)
+
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
