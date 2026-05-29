@@ -15,7 +15,13 @@ class MovieDetailsViewModel(
     private val _state = MutableStateFlow(MovieDetailsState())
     val state: StateFlow<MovieDetailsState> = _state
 
-    fun loadMovie(imdbId: String) {
+    fun onIntent(intent: MovieDetailsIntent) {
+        when (intent) {
+            is MovieDetailsIntent.LoadMovie -> loadMovie(intent.imdbId)
+        }
+    }
+
+    private fun loadMovie(imdbId: String) {
         viewModelScope.launch {
             _state.value = MovieDetailsState(loading = true)
 

@@ -45,6 +45,7 @@ import rma_06_kotlin.composeapp.generated.resources.movie
 import rs.edu.raf.rma.movies.coponents.CastItem
 import rs.edu.raf.rma.movies.coponents.GenreTag
 import rs.edu.raf.rma.movies.coponents.InfoBadge
+import rs.edu.raf.rma.movies.viewmodel.MovieDetailsIntent
 import rs.edu.raf.rma.movies.viewmodel.MovieDetailsViewModel
 
 @Composable
@@ -56,7 +57,7 @@ fun MovieScreen(
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(imdbId) {
-        viewModel.loadMovie(imdbId)
+        viewModel.onIntent(MovieDetailsIntent.LoadMovie(imdbId))
     }
 
     when {

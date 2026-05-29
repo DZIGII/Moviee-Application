@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import org.koin.compose.viewmodel.koinViewModel
 import rs.edu.raf.rma.movies.coponents.MovieListItem
 import rs.edu.raf.rma.movies.domain.SortOption
+import rs.edu.raf.rma.movies.viewmodel.MoviesEffect
 import rs.edu.raf.rma.movies.viewmodel.MoviesIntent
 import rs.edu.raf.rma.movies.viewmodel.MoviesViewModel
 
@@ -51,6 +52,14 @@ fun MainScreen(
     val viewModel: MoviesViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is MoviesEffect.NavigateToDetails -> onMovieClick(effect.imdbId)
+            }
+        }
+    }
+
     LaunchedEffect(activeFilters) {
         val hasActiveFilters =
             activeFilters.searchQuery.isNotBlank() ||
@@ -60,9 +69,9 @@ fun MainScreen(
                     activeFilters.minRating != 10f
 
         if (hasActiveFilters) {
-            viewModel.applyFilters(activeFilters)
+            viewModel.onIntent(MoviesIntent.ApplyFilters(activeFilters))
         } else {
-            viewModel.loadMovies()
+            viewModel.onIntent(MoviesIntent.LoadMovies)
         }
     }
 
@@ -114,7 +123,7 @@ fun MainScreen(
                         MovieListItem(
                             movie = movie,
                             onClick = {
-                                onMovieClick(it.imdbId)
+                                viewModel.onIntent(MoviesIntent.OnMovieClicked(it.imdbId))
                             }
                         )
                     }

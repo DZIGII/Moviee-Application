@@ -43,6 +43,7 @@ class MoviesViewModel(
             is MoviesIntent.LoadMovies -> loadMovies()
             is MoviesIntent.OnMovieClicked -> navigateToDetails(intent.imdbId)
             is MoviesIntent.ChangeSortBy -> changeSortBy(intent.sortOption)
+            is MoviesIntent.ApplyFilters -> applyFilters(intent.filters)
         }
     }
 
@@ -58,7 +59,7 @@ class MoviesViewModel(
         }
     }
 
-    fun loadMovies() {
+    private fun loadMovies() {
         currentFilters = null
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
@@ -71,7 +72,7 @@ class MoviesViewModel(
         }
     }
 
-    fun applyFilters(filters: MovieFilterUiState) {
+    private fun applyFilters(filters: MovieFilterUiState) {
         currentFilters = filters
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
