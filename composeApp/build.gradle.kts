@@ -36,15 +36,11 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
 
+            // Ktor
             implementation(libs.ktor.client.okhttp)
 
             // Room
             implementation(libs.room.runtime.android)
-
-            implementation(libs.coil.network.ktor)
-
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonMain.dependencies {
             // Compose Multiplatform
@@ -57,8 +53,6 @@ kotlin {
             implementation(libs.compose.material3.adaptive.navigation.suite)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
 
             // Lifecycle & Navigation
             implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -74,6 +68,9 @@ kotlin {
 
             // Ktor & Serialization
             implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
 
             // Ktorfit
@@ -92,12 +89,17 @@ kotlin {
             // Logging
             implementation(libs.napier)
 
+            // Image Loading
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+
             // Adaptive UI
             implementation(libs.adaptive.ui)
 
-            implementation(libs.coil.compose)
-
-
+            // DataStore KMP with Okio
+            implementation(libs.datastore.core)
+            implementation(libs.datastore.core.okio)
+            implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
