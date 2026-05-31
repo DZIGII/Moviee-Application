@@ -2,7 +2,6 @@ package rs.edu.raf.rma.movies.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -22,29 +21,38 @@ class MovieDetailsViewModel(
     }
 
     private fun loadMovie(imdbId: String) {
+        observeMovie(imdbId)
+        fetchMovie(imdbId)
+    }
+
+    private fun observeMovie(imdbId: String) {
         viewModelScope.launch {
-            _state.value = MovieDetailsState(loading = true)
+            launch {
+                repository.observeMovieDetails(imdbId).collect { movie ->
+                    _state.value = _state.value.copy(movie = movie)
+                }
+            }
+            launch {
+                repository.observeCast(imdbId).collect { cast ->
+                    _state.value = _state.value.copy(cast = cast)
+                }
+            }
+            launch {
+                repository.observeImages(imdbId).collect { images ->
+                    _state.value = _state.value.copy(images = images)
+                }
+            }
+        }
+    }
 
+    private fun fetchMovie(imdbId: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(loading = true, error = null)
             try {
-                val movieDeferred = async { repository.getMovieDetails(imdbId) }
-                val castDeferred = async { repository.getMovieCast(imdbId) }
-                val imagesDeferred = async { repository.getMovieImages(imdbId) }
-
-                val movie = movieDeferred.await()
-                val cast = castDeferred.await()
-                val images = imagesDeferred.await()
-
-                _state.value = MovieDetailsState(
-                    loading = false,
-                    movie = movie,
-                    cast = cast,
-                    images = images.backdrops
-                )
+                repository.fetchMovieDetails(imdbId)
+                _state.value = _state.value.copy(loading = false, error = null)
             } catch (e: Exception) {
-                _state.value = MovieDetailsState(
-                    loading = false,
-                    error = e.message
-                )
+                _state.value = _state.value.copy(loading = false, error = e.message)
             }
         }
     }

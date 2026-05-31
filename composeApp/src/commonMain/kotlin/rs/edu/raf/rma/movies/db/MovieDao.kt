@@ -27,6 +27,9 @@ interface MovieDao {
     @Query("SELECT * FROM movie_images WHERE movieImdbId = :imdbId")
     fun observeImages(imdbId: String): Flow<List<MovieImageEntity>>
 
+    @Query("SELECT * FROM genres ORDER BY name ASC")
+    fun observeAllGenres(): Flow<List<GenreEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertMovies(movies: List<MovieEntity>)
 

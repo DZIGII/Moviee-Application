@@ -1,52 +1,113 @@
 package rs.edu.raf.rma.movies.repository.impl
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import rs.edu.raf.rma.core.db.AppDatabase
 import rs.edu.raf.rma.movies.data.remote.MovieApiService
+import rs.edu.raf.rma.movies.data.toDomain
+import rs.edu.raf.rma.movies.data.toEntity
+import rs.edu.raf.rma.movies.data.toGenreCrossRefs
 import rs.edu.raf.rma.movies.domain.Cast
 import rs.edu.raf.rma.movies.domain.Genre
 import rs.edu.raf.rma.movies.domain.Movie
 import rs.edu.raf.rma.movies.domain.MovieDetail
-import rs.edu.raf.rma.movies.domain.MovieImages
+import rs.edu.raf.rma.movies.domain.MovieImage
 import rs.edu.raf.rma.movies.repository.MovieRepository
 
 class MovieRepositoryImpl(
+    private val appDatabase: AppDatabase,
     private val api: MovieApiService
 ) : MovieRepository {
 
-    override suspend fun getMovies(sortBy: String?): List<Movie> {
-        return api.getMovies(sortBy = sortBy).items
+    override fun observeMovies(): Flow<List<Movie>> =
+        appDatabase.movieDao()
+            .observeAllMovies()
+            .distinctUntilChanged()
+            .map { rows -> rows.map { it.toDomain() } }
+
+    override fun observeMovieDetails(imdbId: String): Flow<MovieDetail?> =
+        appDatabase.movieDao()
+            .observeMovieDetails(imdbId)
+            .map { entity -> entity?.toDomain() }
+
+    override fun observeCast(imdbId: String): Flow<List<Cast>> =
+        appDatabase.movieDao()
+            .observeCast(imdbId)
+            .map { rows -> rows.map { it.toDomain() } }
+
+    override fun observeImages(imdbId: String): Flow<List<MovieImage>> =
+        appDatabase.movieDao()
+            .observeImages(imdbId)
+            .map { rows -> rows.map { it.toDomain() } }
+
+    override suspend fun fetchMovies(sortBy: String?): List<String> {
+        val response = api.getMovies(sortBy = sortBy)
+        val movies = response.items
+        val movieEntities = movies.map { it.toEntity() }
+        val genreEntities = movies
+            .flatMap { it.genres }
+            .distinctBy { it.id }
+            .map { it.toEntity() }
+        val crossRefs = movies.flatMap { it.toGenreCrossRefs() }
+        appDatabase.movieDao().refreshMoviesList(movieEntities, genreEntities, crossRefs)
+        return movies.map { it.imdbId }
     }
 
-    override suspend fun getFilteredMovies(
+    override suspend fun fetchFilteredMovies(
         query: String?,
         genreId: Int?,
         minYear: Int?,
         maxYear: Int?,
         minRating: Float?,
-        sortBy: String?
-    ): List<Movie> {
-        return api.getMovies(
+        sortBy: String?,
+    ): List<String> {
+        val response = api.getMovies(
             query = query,
             genreId = genreId,
             minYear = minYear,
             maxYear = maxYear,
             minRating = minRating,
-            sortBy = sortBy
-        ).items
+            sortBy = sortBy,
+        )
+        val movies = response.items
+        val movieEntities = movies.map { it.toEntity() }
+        val genreEntities = movies
+            .flatMap { it.genres }
+            .distinctBy { it.id }
+            .map { it.toEntity() }
+        val crossRefs = movies.flatMap { it.toGenreCrossRefs() }
+        appDatabase.movieDao().refreshMoviesList(movieEntities, genreEntities, crossRefs)
+        return movies.map { it.imdbId }
     }
 
-    override suspend fun getGenres(): List<Genre> {
-        return api.getGenres()
+    override suspend fun fetchMovieDetails(imdbId: String) {
+        val detail = api.getMovieDetails(imdbId)
+        val cast = api.getMovieCast(imdbId).items
+        val images = api.getMovieImages(imdbId)
+
+        val genreEntities = detail.genres.map { it.toEntity() }
+        val crossRefs = detail.toGenreCrossRefs()
+        val castEntities = cast.map { it.toEntity(imdbId) }
+        val imageEntities = images.backdrops.map { it.toEntity(imdbId) }
+
+        appDatabase.movieDao().refreshMovieDetails(
+            details = detail.toEntity(),
+            genres = genreEntities,
+            crossRefs = crossRefs,
+            cast = castEntities,
+            images = imageEntities,
+        )
     }
 
-    override suspend fun getMovieDetails(id: String): MovieDetail {
-        return api.getMovieDetails(id)
-    }
+    override fun observeGenres(): Flow<List<Genre>> =
+        appDatabase.movieDao()
+            .observeAllGenres()
+            .map { rows -> rows.map { it.toDomain() } }
 
-    override suspend fun getMovieCast(id: String): List<Cast> {
-        return api.getMovieCast(id).items
-    }
-
-    override suspend fun getMovieImages(id: String): MovieImages {
-        return api.getMovieImages(id)
+    override suspend fun fetchGenres() {
+        val genres = api.getGenres()
+        val genreEntities = genres.map { it.toEntity() }
+        appDatabase.movieDao().upsertGenres(genreEntities)
     }
 }

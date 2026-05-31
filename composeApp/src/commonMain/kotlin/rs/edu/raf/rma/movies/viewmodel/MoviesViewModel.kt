@@ -35,39 +35,72 @@ class MoviesViewModel(
     private var currentFilters: MovieFilterUiState? = null
 
     init {
-        loadGenres()
+        observeMovies()
+        observeGenres()
+        fetchGenres()
+        fetchMovies()
     }
 
     fun onIntent(intent: MoviesIntent) {
         when (intent) {
-            is MoviesIntent.LoadMovies -> loadMovies()
+            is MoviesIntent.LoadMovies -> fetchMovies()
             is MoviesIntent.OnMovieClicked -> navigateToDetails(intent.imdbId)
             is MoviesIntent.ChangeSortBy -> changeSortBy(intent.sortOption)
             is MoviesIntent.ApplyFilters -> applyFilters(intent.filters)
         }
     }
 
-    private fun loadGenres() {
+    private fun observeMovies() {
         viewModelScope.launch {
-            try {
-                val genres = repository.getGenres()
-                genresMap = genres.associate { it.name to it.id }
-                _state.value = _state.value.copy(genres = genres)
-            } catch (e: Exception) {
-                println("Failed to load genres: ${e.message}")
+            repository.observeMovies().collect { movies ->
+                _state.value = _state.value.copy(movies = movies)
             }
         }
     }
 
-    private fun loadMovies() {
+    private fun observeGenres() {
+        viewModelScope.launch {
+            repository.observeGenres().collect { genres ->
+                genresMap = genres.associate { it.name to it.id }
+                _state.value = _state.value.copy(genres = genres)
+            }
+        }
+    }
+
+    private fun fetchGenres() {
+        viewModelScope.launch {
+            try {
+                repository.fetchGenres()
+            } catch (e: Exception) {
+                println("Failed to fetch genres: ${e.message}")
+            }
+        }
+    }
+
+    private fun fetchMovies() {
         currentFilters = null
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
-                val movies = repository.getMovies(sortBy = _state.value.sortBy.apiValue)
-                _state.value = _state.value.copy(loading = false, movies = movies, error = null)
+                val movieIds = repository.fetchMovies(sortBy = _state.value.sortBy.apiValue)
+                _state.value = _state.value.copy(loading = false, error = null)
+                fetchAllMovieDetails(movieIds)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(loading = false, error = e.message)
+            }
+        }
+    }
+
+    private fun fetchAllMovieDetails(movieIds: List<String>) {
+        viewModelScope.launch {
+            for (imdbId in movieIds) {
+                launch {
+                    try {
+                        repository.fetchMovieDetails(imdbId)
+                    } catch (e: Exception) {
+                        println("Failed to fetch details for $imdbId: ${e.message}")
+                    }
+                }
             }
         }
     }
@@ -78,7 +111,7 @@ class MoviesViewModel(
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val genreId = filters.selectedGenre?.let { genresMap[it] }
-                val movies = repository.getFilteredMovies(
+                repository.fetchFilteredMovies(
                     query = filters.searchQuery.takeIf { it.isNotBlank() },
                     genreId = genreId,
                     minYear = filters.fromYear.toIntOrNull(),
@@ -86,7 +119,7 @@ class MoviesViewModel(
                     minRating = ((filters.minRating * 10).toInt() / 10f),
                     sortBy = _state.value.sortBy.apiValue
                 )
-                _state.value = _state.value.copy(loading = false, movies = movies, error = null)
+                _state.value = _state.value.copy(loading = false, error = null)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(loading = false, error = e.message)
             }
@@ -99,7 +132,7 @@ class MoviesViewModel(
         if (filters != null) {
             applyFilters(filters)
         } else {
-            loadMovies()
+            fetchMovies()
         }
     }
 

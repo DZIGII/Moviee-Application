@@ -88,7 +88,7 @@ fun MainScreen(
     ) { padding ->
 
         when {
-            state.loading -> {
+            state.loading && state.movies.isEmpty() -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -99,7 +99,7 @@ fun MainScreen(
                 }
             }
 
-            state.error != null -> {
+            state.error != null && state.movies.isEmpty() -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
