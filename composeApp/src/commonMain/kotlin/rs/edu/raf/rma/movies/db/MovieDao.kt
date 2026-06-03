@@ -89,4 +89,51 @@ interface MovieDao {
         deleteImagesForMovie(details.imdbId)
         upsertImages(images)
     }
+
+
+    // ── Favorites ────────────────────────────────────────────
+
+    @Transaction
+    @Query("SELECT m.* FROM movies m INNER JOIN favorites f ON m.imdbId = f.imdbId")
+    fun observeFavorites(): Flow<List<MovieWithGenres>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE imdbId = :imdbId)")
+    fun isFavorite(imdbId: String): Flow<Boolean>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addFavorite(favorite: FavoriteEntity)
+
+    @Query("DELETE FROM favorites WHERE imdbId = :imdbId")
+    suspend fun removeFavorite(imdbId: String)
+
+    @Query("DELETE FROM favorites")
+    suspend fun deleteAllFavorites()
+
+    @Transaction
+    suspend fun refreshFavorites(imdbIds: List<String>) {
+        deleteAllFavorites()
+        imdbIds.forEach { addFavorite(FavoriteEntity(it)) }
+    }
+
+    @Transaction
+    @Query("SELECT m.* FROM movies m INNER JOIN watchlist w ON m.imdbId = w.imdbId")
+    fun observeWatchlist(): Flow<List<MovieWithGenres>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM watchlist WHERE imdbId = :imdbId)")
+    fun isInWatchlist(imdbId: String): Flow<Boolean>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addToWatchlist(entry: WatchlistEntity)
+
+    @Query("DELETE FROM watchlist WHERE imdbId = :imdbId")
+    suspend fun removeFromWatchlist(imdbId: String)
+
+    @Query("DELETE FROM watchlist")
+    suspend fun deleteAllWatchlist()
+
+    @Transaction
+    suspend fun refreshWatchlist(imdbIds: List<String>) {
+        deleteAllWatchlist()
+        imdbIds.forEach { addToWatchlist(WatchlistEntity(it)) }
+    }
 }

@@ -15,6 +15,8 @@ import rs.edu.raf.rma.movies.db.MovieDetailsEntity
 import rs.edu.raf.rma.movies.db.MovieEntity
 import rs.edu.raf.rma.movies.db.MovieGenreCrossRef
 import rs.edu.raf.rma.movies.db.MovieImageEntity
+import rs.edu.raf.rma.movies.db.FavoriteEntity
+import rs.edu.raf.rma.movies.db.WatchlistEntity
 
 @Database(
     entities = [
@@ -24,8 +26,10 @@ import rs.edu.raf.rma.movies.db.MovieImageEntity
         MovieGenreCrossRef::class,
         CastEntity::class,
         MovieImageEntity::class,
+        FavoriteEntity::class,
+        WatchlistEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(DateConverters::class)
@@ -44,6 +48,7 @@ fun buildAppDatabase(
     builder: RoomDatabase.Builder<AppDatabase>,
 ): AppDatabase {
     return builder
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()

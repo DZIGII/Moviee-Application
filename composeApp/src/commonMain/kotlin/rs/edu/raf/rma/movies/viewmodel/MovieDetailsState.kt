@@ -9,5 +9,7 @@ data class MovieDetailsState(
     val movie: MovieDetail? = null,
     val cast: List<Cast> = emptyList(),
     val images: List<MovieImage> = emptyList(),
+    val isFavorite: Boolean = false,
+    val isWatchlist: Boolean = false,
     val error: String? = null
 )

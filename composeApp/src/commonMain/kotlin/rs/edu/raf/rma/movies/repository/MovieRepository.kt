@@ -25,4 +25,12 @@ interface MovieRepository {
     suspend fun fetchMovieDetails(imdbId: String)
     fun observeGenres(): Flow<List<Genre>>
     suspend fun fetchGenres()
+    fun observeFavorites(): Flow<List<Movie>>
+    fun isFavorite(imdbId: String): Flow<Boolean>
+    suspend fun fetchFavorites()
+    suspend fun toggleFavorite(imdbId: String)
+    fun observeWatchlist(): Flow<List<Movie>>
+    fun isInWatchlist(imdbId: String): Flow<Boolean>
+    suspend fun fetchWatchlist()
+    suspend fun toggleWatchlist(imdbId: String)
 }

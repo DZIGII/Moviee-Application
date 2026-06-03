@@ -18,9 +18,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,7 +57,7 @@ import rs.edu.raf.rma.movies.viewmodel.MovieDetailsViewModel
 @Composable
 fun MovieScreen(
     imdbId: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val viewModel: MovieDetailsViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
@@ -195,6 +201,7 @@ fun MovieScreen(
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
+
                         }
 
                         Row(
@@ -234,6 +241,32 @@ fun MovieScreen(
                             movieDetail.genres.forEach { genre ->
                                 GenreTag(genre)
                             }
+                        }
+
+                        IconButton(onClick = {
+                            viewModel.onIntent(MovieDetailsIntent.ToggleFavorites(imdbId))
+                        }) {
+                            Icon(
+                                imageVector = if (state.isFavorite)
+                                    Icons.Default.Favorite else
+                                    Icons.Default.FavoriteBorder,
+                                contentDescription = "Toggle favorite",
+                                tint = if (state.isFavorite) Color(0xFFE91E63)
+                                else Color.Gray,
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            viewModel.onIntent(MovieDetailsIntent.ToggleWatchlist(imdbId))
+                        }) {
+                            Icon(
+                                imageVector = if (state.isFavorite)
+                                    Icons.Default.PlayArrow else
+                                    Icons.Default.PlayArrow,
+                                contentDescription = "Toggle favorite",
+                                tint = if (state.isWatchlist) Color(0xFFE91E63)
+                                else Color.Gray,
+                            )
                         }
 
                         Text(

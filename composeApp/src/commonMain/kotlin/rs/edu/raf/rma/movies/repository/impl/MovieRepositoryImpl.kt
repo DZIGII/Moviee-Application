@@ -2,12 +2,15 @@ package rs.edu.raf.rma.movies.repository.impl
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import rs.edu.raf.rma.core.db.AppDatabase
 import rs.edu.raf.rma.movies.data.remote.MovieApiService
 import rs.edu.raf.rma.movies.data.toDomain
 import rs.edu.raf.rma.movies.data.toEntity
 import rs.edu.raf.rma.movies.data.toGenreCrossRefs
+import rs.edu.raf.rma.movies.db.FavoriteEntity
+import rs.edu.raf.rma.movies.db.WatchlistEntity
 import rs.edu.raf.rma.movies.domain.Cast
 import rs.edu.raf.rma.movies.domain.Genre
 import rs.edu.raf.rma.movies.domain.Movie
@@ -109,5 +112,103 @@ class MovieRepositoryImpl(
         val genres = api.getGenres()
         val genreEntities = genres.map { it.toEntity() }
         appDatabase.movieDao().upsertGenres(genreEntities)
+    }
+
+    override fun observeFavorites(): Flow<List<Movie>> =
+        appDatabase.movieDao()
+            .observeFavorites()
+            .distinctUntilChanged()
+            .map { rows -> rows.map { it.toDomain() } }
+
+    override fun isFavorite(imdbId: String): Flow<Boolean> =
+        appDatabase.movieDao().isFavorite(imdbId)
+
+    override suspend fun fetchFavorites() {
+        val movies = api.getFavorites()
+        val movieEntities = movies.map { it.toEntity() }
+        val genreEntities = movies
+            .flatMap { it.genres }
+            .distinctBy { it.id }
+            .map { it.toEntity() }
+        val crossRefs = movies.flatMap { it.toGenreCrossRefs() }
+
+        val dao = appDatabase.movieDao()
+        dao.upsertGenres(genreEntities)
+        dao.upsertMovies(movieEntities)
+        dao.upsertMovieGenreCrossRefs(crossRefs)
+        dao.refreshFavorites(movies.map { it.imdbId })
+    }
+
+    override suspend fun toggleFavorite(imdbId: String) {
+        val dao = appDatabase.movieDao()
+        val currentlyFavorite = dao.isFavorite(imdbId).first()
+
+        if (currentlyFavorite) {
+            dao.removeFavorite(imdbId)
+            try {
+                api.removeFavorite(imdbId)
+            } catch (e: Exception) {
+                dao.addFavorite(FavoriteEntity(imdbId))
+                throw e
+            }
+        } else {
+            dao.addFavorite(FavoriteEntity(imdbId))
+            try {
+                api.addFavorite(imdbId)
+            } catch (e: Exception) {
+                dao.removeFavorite(imdbId)
+                throw e
+            }
+        }
+    }
+
+    // ── Watchlist ────────────────────────────────────────────
+
+    override fun observeWatchlist(): Flow<List<Movie>> =
+        appDatabase.movieDao()
+            .observeWatchlist()
+            .distinctUntilChanged()
+            .map { rows -> rows.map { it.toDomain() } }
+
+    override fun isInWatchlist(imdbId: String): Flow<Boolean> =
+        appDatabase.movieDao().isInWatchlist(imdbId)
+
+    override suspend fun fetchWatchlist() {
+        val movies = api.getWatchlist()
+        val movieEntities = movies.map { it.toEntity() }
+        val genreEntities = movies
+            .flatMap { it.genres }
+            .distinctBy { it.id }
+            .map { it.toEntity() }
+        val crossRefs = movies.flatMap { it.toGenreCrossRefs() }
+
+        val dao = appDatabase.movieDao()
+        dao.upsertGenres(genreEntities)
+        dao.upsertMovies(movieEntities)
+        dao.upsertMovieGenreCrossRefs(crossRefs)
+        dao.refreshWatchlist(movies.map { it.imdbId })
+    }
+
+    override suspend fun toggleWatchlist(imdbId: String) {
+        val dao = appDatabase.movieDao()
+        val currentlyInWatchlist = dao.isInWatchlist(imdbId).first()
+
+        if (currentlyInWatchlist) {
+            dao.removeFromWatchlist(imdbId)
+            try {
+                api.removeFromWatchlist(imdbId)
+            } catch (e: Exception) {
+                dao.addToWatchlist(WatchlistEntity(imdbId))
+                throw e
+            }
+        } else {
+            dao.addToWatchlist(WatchlistEntity(imdbId))
+            try {
+                api.addToWatchlist(imdbId)
+            } catch (e: Exception) {
+                dao.removeFromWatchlist(imdbId)
+                throw e
+            }
+        }
     }
 }

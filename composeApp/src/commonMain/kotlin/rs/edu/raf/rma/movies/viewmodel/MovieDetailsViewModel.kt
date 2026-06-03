@@ -17,6 +17,8 @@ class MovieDetailsViewModel(
     fun onIntent(intent: MovieDetailsIntent) {
         when (intent) {
             is MovieDetailsIntent.LoadMovie -> loadMovie(intent.imdbId)
+            is MovieDetailsIntent.ToggleFavorites -> toggleFavorites(intent.imdbId)
+            is MovieDetailsIntent.ToggleWatchlist -> toggleWatchlist(intent.imdbId)
         }
     }
 
@@ -42,6 +44,16 @@ class MovieDetailsViewModel(
                     _state.value = _state.value.copy(images = images)
                 }
             }
+            launch {
+                repository.isFavorite(imdbId).collect { isFav ->
+                    _state.value = _state.value.copy(isFavorite = isFav)
+                }
+            }
+            launch {
+                repository.isInWatchlist(imdbId).collect { isWl ->
+                    _state.value = _state.value.copy(isWatchlist = isWl)
+                }
+            }
         }
     }
 
@@ -53,6 +65,26 @@ class MovieDetailsViewModel(
                 _state.value = _state.value.copy(loading = false, error = null)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(loading = false, error = e.message)
+            }
+        }
+    }
+
+    private fun toggleFavorites(imdbId: String) {
+        viewModelScope.launch {
+            try {
+                repository.toggleFavorite(imdbId)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(error = e.message)
+            }
+        }
+    }
+
+    private fun toggleWatchlist(imdbId: String) {
+        viewModelScope.launch {
+            try {
+                repository.toggleWatchlist(imdbId)
+            } catch (e : Exception) {
+                _state.value = _state.value.copy(error = e.message)
             }
         }
     }

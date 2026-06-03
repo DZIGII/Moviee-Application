@@ -1,8 +1,12 @@
 package rs.edu.raf.rma.movies.data.remote
 
+import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
+import io.ktor.client.statement.HttpResponse
+import rs.edu.raf.rma.movies.domain.Movie
 import rs.edu.raf.rma.movies.domain.Cast
 import rs.edu.raf.rma.movies.domain.Genre
 import rs.edu.raf.rma.movies.domain.MovieDetail
@@ -43,4 +47,22 @@ interface MovieApiService {
     suspend fun getMovieImages(
         @Path("id") id: String
     ): MovieImages
+
+    @GET("me/favorites")
+    suspend fun getFavorites(): List<Movie>
+
+    @POST("me/favorites/{id}")
+    suspend fun addFavorite(@Path("id") imdbId: String): HttpResponse
+
+    @DELETE("me/favorites/{id}")
+    suspend fun removeFavorite(@Path("id") imdbId: String): HttpResponse
+
+    @GET("me/watchlist")
+    suspend fun getWatchlist(): List<Movie>
+
+    @POST("me/watchlist/{id}")
+    suspend fun addToWatchlist(@Path("id") imdbId: String): HttpResponse
+
+    @DELETE("me/watchlist/{id}")
+    suspend fun removeFromWatchlist(@Path("id") imdbId: String): HttpResponse
 }

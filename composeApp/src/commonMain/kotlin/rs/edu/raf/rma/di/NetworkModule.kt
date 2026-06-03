@@ -24,8 +24,10 @@ import rs.edu.raf.rma.movies.data.remote.NetworkConstants
 import rs.edu.raf.rma.movies.data.remote.createHttpClient
 import rs.edu.raf.rma.movies.repository.MovieRepository
 import rs.edu.raf.rma.movies.repository.impl.MovieRepositoryImpl
+import rs.edu.raf.rma.movies.viewmodel.FavoritesViewModel
 import rs.edu.raf.rma.movies.viewmodel.MovieDetailsViewModel
 import rs.edu.raf.rma.movies.viewmodel.MoviesViewModel
+import rs.edu.raf.rma.movies.viewmodel.WatchlistViewModel
 
 val networkModule = module {
 
@@ -79,6 +81,8 @@ val networkModule = module {
     viewModelOf(::AuthViewModel)
     viewModelOf(::MoviesViewModel)
     viewModelOf(::MovieDetailsViewModel)
+    viewModelOf(::FavoritesViewModel)
+    viewModelOf(::WatchlistViewModel)
 }
 
 /**

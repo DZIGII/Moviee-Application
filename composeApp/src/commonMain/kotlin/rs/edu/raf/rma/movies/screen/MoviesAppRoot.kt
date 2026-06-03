@@ -12,7 +12,7 @@ import rs.edu.raf.rma.core.auth.AuthStore
 import rs.edu.raf.rma.core.auth.model.AuthState
 import rs.edu.raf.rma.core.auth.viewmodel.AuthIntent
 import rs.edu.raf.rma.core.auth.viewmodel.AuthViewModel
-import rs.edu.raf.rma.movies.viewmodel.MoviesViewModel
+import rs.edu.raf.rma.movies.navigator.MainNavigator
 
 @Composable
 fun MoviesAppRoot() {
@@ -24,7 +24,7 @@ fun MoviesAppRoot() {
             AuthFlow()
         }
         is AuthState.Authenticated -> {
-            MainFlow()
+            MainNavigator()
         }
     }
 }
@@ -35,7 +35,6 @@ private fun AuthFlow() {
     val state by authViewModel.state.collectAsState()
 
     var showRegister by remember { mutableStateOf(false) }
-
 
     if (showRegister) {
         RegistrationScreen(
@@ -55,55 +54,5 @@ private fun AuthFlow() {
             isLoading = state.loading,
             error = state.error
         )
-    }
-}
-
-@Composable
-private fun MainFlow() {
-    val viewModel: MoviesViewModel = koinViewModel()
-    val state by viewModel.state.collectAsState()
-
-    var showFilter by remember { mutableStateOf(false) }
-    var selectedMovieId by remember { mutableStateOf<String?>(null) }
-    var filters by remember { mutableStateOf(MovieFilterUiState()) }
-
-    when {
-        selectedMovieId != null -> {
-            MovieScreen(
-                imdbId = selectedMovieId!!,
-                onBackClick = {
-                    selectedMovieId = null
-                }
-            )
-        }
-
-        showFilter -> {
-            FilterScreen(
-                filters = filters,
-                genres = state.genres,
-                onFiltersChange = { newFilters ->
-                    filters = newFilters
-                },
-                onBackClick = {
-                    showFilter = false
-                },
-                onApplyFilters = { newFilters ->
-                    filters = newFilters
-                    showFilter = false
-                }
-            )
-        }
-
-        else -> {
-            MainScreen(
-                onMovieClick = { imdbId ->
-                    selectedMovieId = imdbId
-                },
-                onFilterClick = {
-                    showFilter = true
-                },
-                activeFilters = filters
-            )
-        }
     }
 }

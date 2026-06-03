@@ -109,8 +109,6 @@ fun MovieListItem(
                     movie.genres.forEach { genre  -> GenreTag(genre = genre) }
                 }
 
-
-
             }
         }
 
