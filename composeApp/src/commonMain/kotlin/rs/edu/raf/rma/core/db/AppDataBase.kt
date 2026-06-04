@@ -17,6 +17,7 @@ import rs.edu.raf.rma.movies.db.MovieGenreCrossRef
 import rs.edu.raf.rma.movies.db.MovieImageEntity
 import rs.edu.raf.rma.movies.db.FavoriteEntity
 import rs.edu.raf.rma.movies.db.WatchlistEntity
+import rs.edu.raf.rma.movies.db.QuizSessionEntity
 
 @Database(
     entities = [
@@ -28,8 +29,9 @@ import rs.edu.raf.rma.movies.db.WatchlistEntity
         MovieImageEntity::class,
         FavoriteEntity::class,
         WatchlistEntity::class,
+        QuizSessionEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(DateConverters::class)

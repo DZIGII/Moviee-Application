@@ -30,10 +30,15 @@ import rs.edu.raf.rma.movies.screen.FilterScreen
 import rs.edu.raf.rma.movies.screen.MainScreen
 import rs.edu.raf.rma.movies.screen.MovieFilterUiState
 import rs.edu.raf.rma.movies.screen.MovieScreen
+import rs.edu.raf.rma.movies.screen.ProfileScreen
+import rs.edu.raf.rma.movies.screen.QuizScreen
 import rs.edu.raf.rma.movies.screen.WatchlistScreen
 import rs.edu.raf.rma.movies.viewmodel.FavoritesIntent
 import rs.edu.raf.rma.movies.viewmodel.FavoritesViewModel
 import rs.edu.raf.rma.movies.viewmodel.MoviesViewModel
+import rs.edu.raf.rma.movies.viewmodel.QuizIntent
+import rs.edu.raf.rma.movies.viewmodel.QuizPhase
+import rs.edu.raf.rma.movies.viewmodel.QuizViewModel
 
 enum class BottomNavItem(val label: String, val icon: ImageVector) {
     MOVIES("Movies", Icons.Default.Movie),
@@ -46,25 +51,33 @@ enum class BottomNavItem(val label: String, val icon: ImageVector) {
 @Composable
 fun MainNavigator() {
     var selectedTab by remember { mutableStateOf(BottomNavItem.MOVIES) }
+    var pendingTab by remember { mutableStateOf<BottomNavItem?>(null) }
+    val quizViewModel: QuizViewModel = koinViewModel()
+    val quizState by quizViewModel.state.collectAsState()
+
+    val isQuizActive = selectedTab == BottomNavItem.QUIZ &&
+            (quizState.phase == QuizPhase.IN_PROGRESS || quizState.phase == QuizPhase.ANSWER_REVEALED)
 
     Scaffold(
         containerColor = Color(0xFF121212),
         bottomBar = {
-            NavigationBar(containerColor = Color(0xFF1C1C2E)) {
-                BottomNavItem.entries.forEach { item ->
-                    NavigationBarItem(
-                        selected = selectedTab == item,
-                        onClick = { selectedTab = item },
-                        icon = { Icon(item.icon, contentDescription = item.label) },
-                        label = { Text(item.label) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFFFF0A16),
-                            selectedTextColor = Color(0xFFFF0A16),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray,
-                            indicatorColor = Color(0xFF2A2A3E),
+            if (!isQuizActive) {
+                NavigationBar(containerColor = Color(0xFF1C1C2E)) {
+                    BottomNavItem.entries.forEach { item ->
+                        NavigationBarItem(
+                            selected = selectedTab == item,
+                            onClick = { selectedTab = item },
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color(0xFFFF0A16),
+                                selectedTextColor = Color(0xFFFF0A16),
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray,
+                                indicatorColor = Color(0xFF2A2A3E),
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -76,7 +89,16 @@ fun MainNavigator() {
         ) {
             when (selectedTab) {
                 BottomNavItem.MOVIES -> MoviesTab()
-                BottomNavItem.QUIZ -> QuizTab()
+                BottomNavItem.QUIZ -> QuizTab(
+                    quizViewModel = quizViewModel,
+                    onAbandonConfirmed = {
+                        val target = pendingTab
+                        pendingTab = null
+                        if (target != null) {
+                            selectedTab = target
+                        }
+                    },
+                )
                 BottomNavItem.PROFILE -> ProfileTab()
                 BottomNavItem.FAVORITES -> FavoritesTab()
                 BottomNavItem.WATCHLIST -> WatchListTab()
@@ -127,13 +149,19 @@ private fun MoviesTab() {
 }
 
 @Composable
-private fun QuizTab() {
-
+private fun QuizTab(
+    quizViewModel: QuizViewModel,
+    onAbandonConfirmed: () -> Unit,
+) {
+    QuizScreen(
+        viewModel = quizViewModel,
+        onAbandonConfirmed = onAbandonConfirmed,
+    )
 }
 
 @Composable
 private fun ProfileTab() {
-    Box(modifier = Modifier.fillMaxSize())
+    ProfileScreen()
 }
 
 @Composable

@@ -6,6 +6,7 @@ import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
 import io.ktor.client.statement.HttpResponse
+import rs.edu.raf.rma.core.auth.api.UserResponse
 import rs.edu.raf.rma.movies.domain.Movie
 import rs.edu.raf.rma.movies.domain.Cast
 import rs.edu.raf.rma.movies.domain.Genre
@@ -65,4 +66,7 @@ interface MovieApiService {
 
     @DELETE("me/watchlist/{id}")
     suspend fun removeFromWatchlist(@Path("id") imdbId: String): HttpResponse
+
+    @GET("me")
+    suspend fun getMe(): UserResponse
 }

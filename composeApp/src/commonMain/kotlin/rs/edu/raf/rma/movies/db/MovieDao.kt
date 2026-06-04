@@ -136,4 +136,41 @@ interface MovieDao {
         deleteAllWatchlist()
         imdbIds.forEach { addToWatchlist(WatchlistEntity(it)) }
     }
+
+    @Query("SELECT COUNT(*) FROM movies m INNER JOIN movie_images i ON m.imdbId = i.movieImdbId")
+    suspend fun countMoviesWithImages(): Int
+
+    @Query("""
+        SELECT DISTINCT m.imdbId, m.title, m.year, m.imdbRating, m.imdbVotes, m.posterPath
+        FROM movies m
+        INNER JOIN movie_images i ON m.imdbId = i.movieImdbId
+    """)
+    suspend fun getMoviesWithImages(): List<MovieEntity>
+
+    @Query("SELECT * FROM cast_members WHERE movieImdbId = :imdbId LIMIT 3")
+    suspend fun getTopCastForMovie(imdbId: String): List<CastEntity>
+
+    @Query("SELECT * FROM movie_images WHERE movieImdbId = :imdbId")
+    suspend fun getImagesForMovie(imdbId: String): List<MovieImageEntity>
+
+    @Query("SELECT DISTINCT name FROM cast_members ORDER BY RANDOM() LIMIT :limit")
+    suspend fun getRandomActorNames(limit: Int): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuizSession(session: QuizSessionEntity)
+
+    @Query("SELECT MAX(score) FROM quiz_sessions")
+    fun observeBestScore(): Flow<Double?>
+
+    @Query("SELECT COUNT(*) FROM quiz_sessions")
+    fun observeQuizCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM favorites")
+    fun observeFavoritesCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM watchlist")
+    fun observeWatchlistCount(): Flow<Int>
+
+    @Query("DELETE FROM quiz_sessions")
+    suspend fun deleteAllQuizSessions()
 }

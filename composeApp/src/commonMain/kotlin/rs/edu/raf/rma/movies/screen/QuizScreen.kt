@@ -19,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -82,6 +83,7 @@ fun QuizScreen(
         QuizPhase.IN_PROGRESS, QuizPhase.ANSWER_REVEALED -> QuizQuestionContent(
             state = state,
             onAnswerClick = { viewModel.onIntent(QuizIntent.SubmitAnswer(it)) },
+            onQuitClick = { viewModel.onIntent(QuizIntent.AbandonQuiz) },
         )
         QuizPhase.FINISHED -> QuizResultContent(
             state = state,
@@ -153,6 +155,7 @@ private fun QuizStartContent(
 private fun QuizQuestionContent(
     state: QuizState,
     onAnswerClick: (Int) -> Unit,
+    onQuitClick: () -> Unit,
 ) {
     val question = state.currentQuestion ?: return
 
@@ -167,6 +170,9 @@ private fun QuizQuestionContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            TextButton(onClick = onQuitClick) {
+                Text("Quit", color = Color(0xFFFF0A16), fontSize = 14.sp)
+            }
             Text(
                 text = "${state.currentQuestionIndex + 1} / ${state.questions.size}",
                 color = Color.White,
